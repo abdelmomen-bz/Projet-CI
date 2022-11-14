@@ -42,7 +42,25 @@ pipeline {
                   nexusArtifactUploader artifacts: [[artifactId: 'tpAchatProject', classifier: '', file: '/var/lib/jenkins/workspace/ProjetCI/target/docker-spring-boot.jar', type: 'jar']], credentialsId: 'nexus-snapshots', groupId: 'com.esprit.examen', nexusUrl: '192.168.10.141:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'nexus-snapshots', version: '2.2.4'
                  }
               }
+              stage('Build Docker Image') {
+                 steps {
+                 sh 'docker build -t abdelmomen/projetspring:2.2.4 .'
+                 }
+              }
 
+              stage('Push Docker Image') {
+                   steps {
+                   withCredentials([string(credentialsId: 'DockerhubPWS', variable: 'DockerhubPWS')]) {
+                       sh "docker login -u abdelmomen -p ${DockerhubPWS}"
+                   }
+                     sh 'docker push abdelmomen/projetspring:2.2.4'
+                   }
+              }
+              stage('DOCKER COMPOSE') {
+                   steps {
+                      sh 'docker-compose up -d --build'
+                   }
+              }
           }
        }
 
